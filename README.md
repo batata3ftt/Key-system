@@ -1,4 +1,4 @@
-"-- ========================================
+-- ========================================
 -- SYLAX KEY SYSTEM
 -- ========================================
 
@@ -15,6 +15,7 @@ local PlayerGui = Player:WaitForChild("PlayerGui")
 local DISCORD_LINK = "https://discord.gg/nnxRBba7d"
 local DISCORD_IMAGE = "rbxassetid://95649005720075"
 local ICON_IMAGE = "rbxassetid://86801451021941"
+local API_URL = "https://sylax-key.onrender.com/check?key="
 
 local Config = {
     MaxKeyLength = 50,
@@ -79,7 +80,6 @@ particleContainer.ZIndex = 101
 particleContainer.Parent = backdrop
 UI.ParticleContainer = particleContainer
 
--- Container principal
 local container = Instance.new("Frame")
 container.Name = "MainContainer"
 container.Size = UDim2.new(0, 340, 0, 460)
@@ -91,7 +91,6 @@ container.Parent = screenGui
 UI.Container = container
 Instance.new("UICorner", container).CornerRadius = UDim.new(0, 18)
 
--- Borda animada
 local borderFrame = Instance.new("Frame")
 borderFrame.Size = UDim2.new(1, 6, 1, 6)
 borderFrame.Position = UDim2.new(0, -3, 0, -3)
@@ -121,7 +120,6 @@ borderGradient.Transparency = NumberSequence.new{
 borderGradient.Parent = borderStroke
 UI.BorderGradient = borderGradient
 
--- ========== BOTAO X FECHAR ==========
 local closeBtn = Instance.new("TextButton")
 closeBtn.Size = UDim2.new(0, 30, 0, 30)
 closeBtn.Position = UDim2.new(1, -38, 0, 8)
@@ -150,7 +148,6 @@ closeBtn.MouseButton1Click:Connect(function()
     screenGui:Destroy()
 end)
 
--- Icon
 local iconContainer = Instance.new("Frame")
 iconContainer.Size = UDim2.new(0, 52, 0, 52)
 iconContainer.Position = UDim2.new(0.5, -26, 0, 22)
@@ -198,7 +195,6 @@ iconImage.ScaleType = Enum.ScaleType.Fit
 iconImage.ZIndex = 113
 iconImage.Parent = iconContainer
 
--- Titulo
 local titleLabel = Instance.new("TextLabel")
 titleLabel.Size = UDim2.new(1, -20, 0, 30)
 titleLabel.Position = UDim2.new(0, 10, 0, 82)
@@ -231,7 +227,6 @@ subtitleLabel.TextXAlignment = Enum.TextXAlignment.Center
 subtitleLabel.ZIndex = 112
 subtitleLabel.Parent = container
 
--- Input
 local inputContainer = Instance.new("Frame")
 inputContainer.Size = UDim2.new(1, -36, 0, 46)
 inputContainer.Position = UDim2.new(0, 18, 0, 150)
@@ -277,7 +272,6 @@ charCounter.ZIndex = 112
 charCounter.Parent = container
 UI.CharCounter = charCounter
 
--- ========== BOTAO VERIFY + ANIMACAO ==========
 local submitBtn = Instance.new("TextButton")
 submitBtn.Size = UDim2.new(1, -36, 0, 44)
 submitBtn.Position = UDim2.new(0, 18, 0, 216)
@@ -293,7 +287,6 @@ submitBtn.Parent = container
 Instance.new("UICorner", submitBtn).CornerRadius = UDim.new(0, 10)
 UI.SubmitBtn = submitBtn
 
--- Barra de progresso dentro do botao
 local progressBg = Instance.new("Frame")
 progressBg.Size = UDim2.new(1, 0, 1, 0)
 progressBg.BackgroundColor3 = Color3.fromRGB(50, 15, 65)
@@ -313,7 +306,6 @@ progressBar.ZIndex = 113
 progressBar.Parent = progressBg
 Instance.new("UICorner", progressBar).CornerRadius = UDim.new(0, 10)
 
--- Spinner de loading (3 pontos pulsando)
 local spinnerFrame = Instance.new("Frame")
 spinnerFrame.Size = UDim2.new(0, 60, 0, 16)
 spinnerFrame.Position = UDim2.new(0.5, -30, 0.5, -8)
@@ -335,9 +327,6 @@ for i = 1, 3 do
     Instance.new("UICorner", dot).CornerRadius = UDim.new(1, 0)
 end
 
--- ========== BOTOES GET KEY E DISCORD - MAIORES COM MAIS ESPACO ==========
-
--- Get Key - maior, mais espaco interno
 local getKeyBtn = Instance.new("TextButton")
 getKeyBtn.Size = UDim2.new(0.5, -24, 0, 46)
 getKeyBtn.Position = UDim2.new(0, 18, 0, 276)
@@ -352,7 +341,6 @@ getKeyBtn.ZIndex = 112
 getKeyBtn.Parent = container
 Instance.new("UICorner", getKeyBtn).CornerRadius = UDim.new(0, 10)
 
--- Discord - maior, imagem + texto centralizados
 local discordBtn = Instance.new("TextButton")
 discordBtn.Size = UDim2.new(0.5, -24, 0, 46)
 discordBtn.Position = UDim2.new(0.5, 6, 0, 276)
@@ -364,7 +352,6 @@ discordBtn.ZIndex = 112
 discordBtn.Parent = container
 Instance.new("UICorner", discordBtn).CornerRadius = UDim.new(0, 10)
 
--- Conteudo do botao Discord centralizado com icone + texto
 local discordInner = Instance.new("Frame")
 discordInner.Size = UDim2.new(0, 110, 0, 28)
 discordInner.Position = UDim2.new(0.5, -55, 0.5, -14)
@@ -393,7 +380,6 @@ discordText.TextXAlignment = Enum.TextXAlignment.Left
 discordText.ZIndex = 114
 discordText.Parent = discordInner
 
--- Status
 local statusLabel = Instance.new("TextLabel")
 statusLabel.Size = UDim2.new(1, -36, 0, 50)
 statusLabel.Position = UDim2.new(0, 18, 0, 336)
@@ -511,7 +497,10 @@ local function UpdateCharCounter()
     end
 end
 
--- ========== ANIMACAO DOS 3 PONTOS ==========
+-- ========================================
+-- SPINNER
+-- ========================================
+
 local spinnerConn = nil
 
 local function StartSpinner()
@@ -544,7 +533,10 @@ local function StopSpinner()
     UI.SpinnerFrame.Visible = false
 end
 
--- ========== VALIDACAO COM BARRA DE PROGRESSO ==========
+-- ========================================
+-- VALIDATE KEY - API
+-- ========================================
+
 local function ValidateKey()
     if State.IsLoading then return end
     local key = textInput.Text
@@ -561,7 +553,6 @@ local function ValidateKey()
     StartSpinner()
     ShowStatus("Validating key...", false, false)
 
-    -- Anima a barra de progresso em 5 segundos
     Services.TweenService:Create(progressBar, TweenInfo.new(Config.ValidateTime, Enum.EasingStyle.Linear), {
         Size = UDim2.new(1, 0, 1, 0)
     }):Play()
@@ -574,8 +565,7 @@ local function ValidateKey()
         State.IsLoading = false
 
         local success, response = pcall(function()
-            local url = "https://sylax-key.onrender.com/check?key=" .. key
-            return game:HttpGet(url)
+            return game:HttpGet(API_URL .. key)
         end)
 
         if success and response == "valid" then
@@ -711,4 +701,4 @@ Services.TweenService:Create(container, TweenInfo.new(0.4, Enum.EasingStyle.Back
 }):Play()
 task.wait(0.55)
 textInput:CaptureFocus()
-UpdateCharCounter()"
+UpdateCharCounter()
