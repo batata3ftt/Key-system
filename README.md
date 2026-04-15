@@ -16,6 +16,8 @@ local DISCORD_LINK = "https://discord.gg/nnxRBba7d"
 local DISCORD_IMAGE = "rbxassetid://95649005720075"
 local ICON_IMAGE = "rbxassetid://86801451021941"
 local API_URL = "https://sylax-key.onrender.com/check?key="
+local CACHE_FILE = "sylax_key_cache.txt"
+local KEY_DURATION = 2 * 60 * 60
 
 local Config = {
     MaxKeyLength = 50,
@@ -569,6 +571,7 @@ local function ValidateKey()
         end)
 
         if success and response == "valid" then
+            SaveCache(key)
             ShowStatus("Access granted! Loading...", false, true)
             submitBtn.Text = "Access Granted!"
             submitBtn.BackgroundColor3 = Colors.Success
@@ -686,19 +689,55 @@ task.spawn(function()
 end)
 
 -- ========================================
+-- CACHE - 2 HORAS
+-- ========================================
+
+local function SaveCache(key)
+    if writefile then
+        pcall(function()
+            writefile(CACHE_FILE, key .. "|" .. tostring(os.time()))
+        end)
+    end
+end
+
+local function LoadCache()
+    if not readfile then return nil end
+    local ok, data = pcall(function() return readfile(CACHE_FILE) end)
+    if not ok or not data or data == "" then return nil end
+    local key, timestamp = data:match("^(.+)|(%d+)$")
+    if not key or not timestamp then return nil end
+    local elapsed = os.time() - tonumber(timestamp)
+    if elapsed < KEY_DURATION then
+        return key
+    end
+    -- Expirou, apaga o cache
+    pcall(function() writefile(CACHE_FILE, "") end)
+    return nil
+end
+
+-- ========================================
 -- ENTRADA
 -- ========================================
 
-container.Size = UDim2.new(0, 0, 0, 0)
-container.BackgroundTransparency = 1
-backdrop.BackgroundTransparency = 1
+local cachedKey = LoadCache()
 
-Services.TweenService:Create(backdrop, TweenInfo.new(0.3), {BackgroundTransparency = 0.15}):Play()
-task.wait(0.1)
-Services.TweenService:Create(container, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-    Size = UDim2.new(0, 340, 0, 460),
-    BackgroundTransparency = 0
-}):Play()
-task.wait(0.55)
-textInput:CaptureFocus()
-UpdateCharCounter()
+if cachedKey then
+    -- Key valida em cache, executa direto sem mostrar UI
+    State.IsDestroyed = true
+    screenGui:Destroy()
+else
+    -- Sem cache, mostra a UI normalmente
+    container.Size = UDim2.new(0, 0, 0, 0)
+    container.BackgroundTransparency = 1
+    backdrop.BackgroundTransparency = 1
+
+    Services.TweenService:Create(backdrop, TweenInfo.new(0.3), {BackgroundTransparency = 0.15}):Play()
+    task.wait(0.1)
+    Services.TweenService:Create(container, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+        Size = UDim2.new(0, 340, 0, 460),
+        BackgroundTransparency = 0
+    }):Play()
+    task.wait(0.55)
+    textInput:CaptureFocus()
+    UpdateCharCounter()
+end
